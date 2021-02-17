@@ -10,6 +10,7 @@ blockchain.create_genesis_block()
 
 print("blockchain: ")
 print(blockchain.to_dict())
+print("\n\n\n")
 
 first_block = blockchain.chain[-1]
 
@@ -22,7 +23,14 @@ blockchain.mine_block()
 
 print("blockchain: ")
 print(blockchain.to_dict())
+print("\n\n\n")
 second_block = blockchain.chain[-1]
+
+blockchain.add_transaction(address, "coco", 10)
+blockchain.add_transaction(address, "emilie", 30)
+blockchain.mine_block()
+print("blockchain: ")
+print(blockchain.to_dict())
 
 print("Second block: ")
 print(second_block)

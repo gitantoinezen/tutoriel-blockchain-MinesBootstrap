@@ -5,52 +5,60 @@ from key import verify_signature
 
 
 class Block:
-    def __init__(self, blockNumber:int, lastHash:str, timestamp=0) -> None:
-        self.transactionList : list[Transaction] = []
-        self.blockNumber = blockNumber
-        self.minerName = ""
-        self.timestamp = timestamp
-        self.last_hash = lastHash
+    def __init__(self, index: int = 0, lasthash: str = "", timestamp=0, miner: str = ""):
+        self.transactions: list[Transaction] = []
+        self.index = index
         self.hashval = ""
+        self.lasthash = lasthash
+        self.timestamp = timestamp
         self.nonce = 0
+        self.miner = ""
 
-    def __repr__(self) -> str:
-        string = "Block id: " + str(self.blockNumber) + "\n" + \
-            "prev hash: " + self.last_hash + "\n" + \
-            "hash: " + self.hashval + "\n" + \
-            "Miner: " + self.minerName + "\n" +\
-            "Nonce: " + str(self.nonce) + "\n"
+    def __repr__(self):
+        string = "Block number: " + str(self.index) + "\n" + \
+                 "hash val: " + str(self.hashval) + "\n" + \
+                 "last hash: " + str(self.lasthash) + "\n" + \
+                 "Nonce: " + str(self.nonce) + "\n" + \
+                 "Timestamp: " + str(self.timestamp) + "\n" \
+                 "Miner name: " + self.miner + "\n"
         return string
 
-    def add_transaction(self,transaction:Transaction) -> None:
-        self.transactionList.append(transaction)
+    def add_transaction(self, t: Transaction):
+        self.transactions.append(t)
 
-    def hash_func(self):
+    def hash(self):  #
+        string = str(self.index) + str(self.timestamp) + \
+            str(self.nonce) + str(self.lasthash)
+        for transaction in self.transactions:
+            string += str(transaction.sender) + \
+                str(transaction.receiver) + str(transaction.amount)
 
-        sha = hashlib.sha256()
-        data = ""
-        data  = str(self.blockNumber) + str(self.nonce) + str(self.last_hash)
-        for elem in self.transactionList:
-            data+= str(elem.sender) + str(elem.receiver) + str(elem.amount)
-        sha.update(data.encode())
+        return hashlib.sha256(string.encode('utf-8')).hexdigest()
 
-        return sha.hexdigest()
-
-    def check_hash(self, hash:str, difficulty = 0):
+    def check_hash(self, difficulty: int = 0, hash: str = "") -> bool:
         return hash.startswith("0" * difficulty)
 
-    def verify(self):
-        return self.hashval == self.hash_func()       
-    
+    def verify(self) -> bool:
+        return self.hash() == self.hashval
 
-    def mine(self, difficulty:int):
-        
+    def mine(self, difficulty: int = 0):
         self.timestamp = time.time()
+        self.miner = "Antoine Z"
 
-        while not self.check_hash(self.hash_func(),difficulty):
+        while not(self.hash().startswith("0" * difficulty)):
             self.nonce += 1
-        
-        self.minerName = "Antoine"
-        self.hashval = self.hash_func()   
-        
 
+        self.hashval = self.hash()
+
+    def to_dict(self):
+        block_dict = {}
+        block_dict["index"] = self.index
+        block_dict["nonce"] = self.nonce
+        block_dict["timestamp"] = self.timestamp
+        block_dict["miner"] = self.miner
+        block_dict["transactions"] = []
+        for elem in self.transactions:
+            block_dict["transactions"].append(elem.to_dict())
+        block_dict["previous_hash"] = self.lasthash
+        block_dict["hashval"] = self.hashval
+        return block_dict

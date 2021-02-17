@@ -5,7 +5,7 @@ from key import BitcoinAccount
 
 wallet = BitcoinAccount()
 
-difficulty = 6
+difficulty = 4
 
 first_block = Block(0, "")
 
